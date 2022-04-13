@@ -14,7 +14,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
@@ -24,16 +23,13 @@ import java.util.Random;
 public class PanDiscView
 {
     private final double width, height, goalWidth, borderThickness, discRadius, panRadius;
-    private double ydisc;
-    private double xpan1;
-    private double ypan1;
-    private double xpan2;
-    private double ypan2 ;
+    private double x_pan1;
+    private double y_pan1;
     private final Random random =new Random();
     private int firstPlayerScore, secondPlayerScore;
+    private final FillTransition fillTransition = new FillTransition();
     Text secondPlayerText, firstPlayerText;
     FillTransition fTouch;
-    MediaPlayer goalMedia ,hura;
     Timeline timer;
 
     //constructor
@@ -51,39 +47,10 @@ public class PanDiscView
 
     public void setPan1Position(double x, double y)
     {
-        this.xpan1=x;
-        this.ypan1=y;
+        this.x_pan1 =x;
+        this.y_pan1 =y;
 
     }
-    public void setPan2Position(double x, double y)
-    {
-        this.xpan2=x;
-        this.ypan2=y;
-
-    }
-    public void setDiscPosition(double x, double y)
-    {
-        double xdisc = xpan1;
-        this.ydisc=ypan1 ;
-
-    }
-    public void set_first_player_score(int score)
-    {
-        this.firstPlayerScore = score;
-    }
-    public void set_second_player_score(int score)
-    {
-        this.secondPlayerScore = score;
-    }
-    public int get_first_player_score()
-    {
-        return firstPlayerScore;
-    }
-    public int get_second_player_score()
-    {
-        return secondPlayerScore;
-    }
-
 
     public Scene getScene()
     {
@@ -98,7 +65,7 @@ public class PanDiscView
         rectGround.setFill(Color.ALICEBLUE);
 
         // draw YOUR pan
-        Circle yourPan =new Circle(xpan1, ypan1 , panRadius);
+        Circle yourPan =new Circle(x_pan1, y_pan1, panRadius);
         yourPan.setFill(Color.LIGHTGREEN);
 
         // DRAW PC pan
@@ -136,13 +103,12 @@ public class PanDiscView
 
         // draw into circle of circle
         Circle interCenter =new Circle(width/2, height/2, (width/6) - borderThickness, Color.RED);
-        FillTransition f4 = new FillTransition();
-        f4.setShape(interCenter);
-        f4.setDuration(new Duration(2000));
-        f4.setToValue(Color.BLACK);
-        f4.setCycleCount(Timeline.INDEFINITE);
-        f4.setAutoReverse(true);
-        f4.play();
+        fillTransition.setShape(interCenter);
+        fillTransition.setDuration(new Duration(2000));
+        fillTransition.setToValue(Color.BLACK);
+        fillTransition.setCycleCount(Timeline.INDEFINITE);
+        fillTransition.setAutoReverse(true);
+        fillTransition.play();
 
         Circle centerOfCenter = new Circle(width/2, height/2, width/20, Color.GREEN);
         //AUTO CHANG COLOR FOR THIS
@@ -185,84 +151,77 @@ public class PanDiscView
         });
 
         //auto stop if mouse exit your pan
-        yourPan.setOnMouseExited((MouseEvent event) -> {
-            fTouch.stop();
-        });
+        yourPan.setOnMouseExited((MouseEvent event) -> fTouch.stop());
 
         //run game each frame by handle move pan and move disc and logic of game
         timer = new Timeline(new KeyFrame(Duration.millis(18),
-                new EventHandler<ActionEvent>() {
-                    double x=5; //dx add every sec
-                    double y=5 ; //dy add every sec
-                    int i ,j ,k;
+                new EventHandler<>() {
+                    double x = 5; //dx add every sec
+                    double y = 5; //dy add every sec
+                    int i, j, k;
 
                     @Override
                     public void handle(ActionEvent t) {
 
-                        disc.setLayoutX(disc.getLayoutX()+x);
-                        disc.setLayoutY(disc.getLayoutY()+y);//move disc
-                        if (x>16 || y>16 )
-                        {
-                            x=x-4;
-                            y=-4;
+                        disc.setLayoutX(disc.getLayoutX() + x);
+                        disc.setLayoutY(disc.getLayoutY() + y);//move disc
+                        if (x > 16 || y > 16) {
+                            x = x - 4;
+                            y = -4;
                         }
-                        if(x<-16 || y<-16)
-                        {
-                            x=x+4;
-                            y=y+4;
+                        if (x < -16 || y < -16) {
+                            x = x + 4;
+                            y = y + 4;
                         }
 
                         //if disc smash to pc goal
-                        if (disc.getLayoutX()>=(width/2) - (goalWidth/2) && disc.getLayoutX()< width - goalWidth  && disc.getLayoutY() <=borderThickness+ discRadius)
-                        {
+                        if (disc.getLayoutX() >= (width / 2) - (goalWidth / 2) && disc.getLayoutX() < width - goalWidth && disc.getLayoutY() <= borderThickness + discRadius) {
                             firstPlayerText.setText("" + ++firstPlayerScore);
 
-                            if(firstPlayerScore <10)
-                            {
-                                String happySoundPath=new File("C:\\Users\\kouro\\OneDrive\\" +
+                            if (firstPlayerScore < 10) {
+                                String happySoundPath = new File("C:\\Users\\kouro\\OneDrive\\" +
                                         "Documents\\Air\\src\\main\\media\\goal.mp3").toURI().toString();
                                 MediaPlayer happySound = new MediaPlayer(new Media(happySoundPath));
                                 happySound.setCycleCount(1);
                                 happySound.play();
                             }
-                            disc.setLayoutX(width/2);//disc back again center ground
-                            disc.setLayoutY(height/2);
-                            y=0; //move
-                            x=0;
+                            disc.setLayoutX(width / 2);//disc back again center ground
+                            disc.setLayoutY(height / 2);
+                            y = 0; //move
+                            x = 0;
 
                         }
 
                         //if disc smash to your goal
-                        if (disc.getLayoutX()>=(width/2) - (goalWidth/2) && disc.getLayoutX()< width - goalWidth  && disc.getLayoutY() >= height-(borderThickness+ discRadius))
-                        {
+                        if (disc.getLayoutX() >= (width / 2) - (goalWidth / 2) && disc.getLayoutX() < width - goalWidth && disc.getLayoutY() >= height - (borderThickness + discRadius)) {
                             secondPlayerText.setText("" + ++secondPlayerScore);
-                            disc.setLayoutX(width/2);
-                            disc.setLayoutY(height/2);
-                            y=0;
-                            x=0;
+                            disc.setLayoutX(width / 2);
+                            disc.setLayoutY(height / 2);
+                            y = 0;
+                            x = 0;
                         }
 
                         //if disc smash side
-                        if(disc.getLayoutX() <= ( disc.getRadius())  ||
-                                disc.getLayoutX() >= (width - disc.getRadius()) ){
-                            String sidePath=new File("C:\\Users\\kouro\\OneDrive\\Documents\\Air" +
+                        if (disc.getLayoutX() <= (disc.getRadius()) ||
+                                disc.getLayoutX() >= (width - disc.getRadius())) {
+                            String sidePath = new File("C:\\Users\\kouro\\OneDrive\\Documents\\Air" +
                                     "\\src\\main\\media\\pop.mp3").toURI().toString();
                             MediaPlayer sideSound = new MediaPlayer(new Media(sidePath));
                             sideSound.setCycleCount(1);
                             sideSound.play();
 
                             x = -x;
-                            if (y==0)
-                                x=-x-4;
+                            if (y == 0)
+                                x = -x - 4;
                             generate_random(random);
                         }
 
                         //if disc smash side
-                        if((disc.getLayoutY() >= (height - disc.getRadius())  ) ||
-                                (disc.getLayoutY() <= ( disc.getRadius()))){
+                        if ((disc.getLayoutY() >= (height - disc.getRadius())) ||
+                                (disc.getLayoutY() <= (disc.getRadius()))) {
 
 
-                            String sidePath=new File("C:\\Users\\kouro\\OneDrive\\Documents\\Air" +
+                            String sidePath = new File("C:\\Users\\kouro\\OneDrive\\Documents\\Air" +
                                     "\\src\\main\\media\\pop.mp3").toURI().toString();
                             MediaPlayer sideSound = new MediaPlayer(new Media(sidePath));
                             sideSound.setCycleCount(1);
@@ -270,90 +229,85 @@ public class PanDiscView
 
                             y = -y;
 
-                            Random random =new Random();
+                            Random random = new Random();
                             generate_random(random);
 
                         }
 
                         //calculate distance your pan and disc if smash your disc reflex disc
-                        double xPanOne , yPanOne ;
-                        xPanOne=(yourPan.getCenterX()-disc.getLayoutX())*(yourPan.getCenterX()-disc.getLayoutX());
-                        yPanOne=(yourPan.getCenterY()-disc.getLayoutY())*(yourPan.getCenterY()-disc.getLayoutY());
+                        double xPanOne, yPanOne;
+                        xPanOne = (yourPan.getCenterX() - disc.getLayoutX()) * (yourPan.getCenterX() - disc.getLayoutX());
+                        yPanOne = (yourPan.getCenterY() - disc.getLayoutY()) * (yourPan.getCenterY() - disc.getLayoutY());
 
-                        if(Math.sqrt(Math.abs(xPanOne+yPanOne))<(panRadius+discRadius))
-                        {
-                            Random rand= new Random();
-                            int ran=rand.nextInt(2)+1;
-                            x=-ran*x-3;
-                            y=-ran*y-5;
-                            if(x<-12 )
-                                x=x+4;
-                            if(y<-10)
-                                y=y+3;
-                            if (x>12)
-                                x=x-4;
-                            if(y>12)
-                                y=y-3;
+                        if (Math.sqrt(Math.abs(xPanOne + yPanOne)) < (panRadius + discRadius)) {
+                            Random rand = new Random();
+                            int ran = rand.nextInt(2) + 1;
+                            x = -ran * x - 3;
+                            y = -ran * y - 5;
+                            if (x < -12)
+                                x = x + 4;
+                            if (y < -10)
+                                y = y + 3;
+                            if (x > 12)
+                                x = x - 4;
+                            if (y > 12)
+                                y = y - 3;
 
                         }
 
-                        if ( disc.getLayoutY()< (height/2) && disc.getLayoutX()>=(width/2) - (goalWidth/2) && disc.getLayoutX()< width - goalWidth   )
-                        {
-                            pcPan.setCenterX(disc.getLayoutX()-6);
+                        if (disc.getLayoutY() < (height / 2) && disc.getLayoutX() >= (width / 2) - (goalWidth / 2) && disc.getLayoutX() < width - goalWidth) {
+                            pcPan.setCenterX(disc.getLayoutX() - 6);
 
                         }
 
                         //calculate distance pc pan and disc if smash pc disc reflex disc
 
-                        double  xPanTwo , yPanTwo ;
-                        xPanTwo=((pcPan.getCenterX()-disc.getLayoutX())*(pcPan.getCenterX()-disc.getLayoutX()));
-                        yPanTwo=((pcPan.getCenterY()-disc.getLayoutY())*(pcPan.getCenterY()-disc.getLayoutY()));
+                        double xPanTwo, yPanTwo;
+                        xPanTwo = ((pcPan.getCenterX() - disc.getLayoutX()) * (pcPan.getCenterX() - disc.getLayoutX()));
+                        yPanTwo = ((pcPan.getCenterY() - disc.getLayoutY()) * (pcPan.getCenterY() - disc.getLayoutY()));
 
-                        if(Math.sqrt(Math.abs(xPanTwo+yPanTwo))<=((panRadius+discRadius)))
-                        {
-                            Random rand= new Random();
-                            int ran=rand.nextInt(2)+1;
-                            x=-ran*x-5;
-                            y=-ran*y-3;
+                        if (Math.sqrt(Math.abs(xPanTwo + yPanTwo)) <= ((panRadius + discRadius))) {
+                            Random rand = new Random();
+                            int ran = rand.nextInt(2) + 1;
+                            x = -ran * x - 5;
+                            y = -ran * y - 3;
 
-                            if (x>12)
-                                x=x-4;
-                            if(y>12)
-                                y=y-3;
-                            if(x<-12 )
-                                x=x+4;
-                            if(y<-10)
-                                y=y+3;
+                            if (x > 12)
+                                x = x - 4;
+                            if (y > 12)
+                                y = y - 3;
+                            if (x < -12)
+                                x = x + 4;
+                            if (y < -10)
+                                y = y + 3;
 
                         }
 
-                        if (firstPlayerScore ==10)
-                        {
-                            Text wonText=new Text(width/5,height/2, "  YOU WIN !!");
+                        if (firstPlayerScore == 10) {
+                            Text wonText = new Text(width / 5, height / 2, "  YOU WIN !!");
                             set_text_setting(wonText, root);
 
 
-                            String basePath=new File("C:\\Users\\kouro\\OneDrive\\Documents" +
+                            String basePath = new File("C:\\Users\\kouro\\OneDrive\\Documents" +
                                     "\\Air\\src\\main\\media\\you_win.mp3").toURI().toString();
                             MediaPlayer baseMusic = new MediaPlayer(new Media(basePath));
                             baseMusic.setCycleCount(1);
                             baseMusic.play();
                         }
 
-                        if (secondPlayerScore ==10)
-                        {
-                            Text wonText=new Text(width/5,height/2, " YOU LOSE !!");
+                        if (secondPlayerScore == 10) {
+                            Text wonText = new Text(width / 5, height / 2, " YOU LOSE !!");
                             set_text_setting(wonText, root);
                         }
                     }
 
                     private void generate_random(Random random2) {
-                        i= random2.nextInt(250);
-                        j= random2.nextInt(250);
-                        k= random2.nextInt(250);
+                        i = random2.nextInt(250);
+                        j = random2.nextInt(250);
+                        k = random2.nextInt(250);
 
                         center.setFill(Color.rgb(i, j, k));
-                        line.setFill(Color.rgb(i, j,k));
+                        line.setFill(Color.rgb(i, j, k));
                         centerOfCenter.setFill(Color.rgb(i, j, k));
                         rectBound.setFill(Color.rgb(i, j, k));
                         b.setFill(Color.rgb(i, j, k));
@@ -403,13 +357,12 @@ public class PanDiscView
     private void set_player_text(Text secondPlayerText, int secondPlayerScore) {
         secondPlayerText.setText(""+ secondPlayerScore);
         secondPlayerText.setFill(Color.CORNFLOWERBLUE);
-        FillTransition fillTextOne= new FillTransition();
-        fillTextOne.setShape(secondPlayerText);
-        fillTextOne.setDuration(new Duration(500));
-        fillTextOne.setToValue(Color.ALICEBLUE);
-        fillTextOne.setCycleCount(Timeline.INDEFINITE);
-        fillTextOne.setAutoReverse(true);
-        fillTextOne.play();
+        fillTransition.setShape(secondPlayerText);
+        fillTransition.setDuration(new Duration(500));
+        fillTransition.setToValue(Color.ALICEBLUE);
+        fillTransition.setCycleCount(Timeline.INDEFINITE);
+        fillTransition.setAutoReverse(true);
+        fillTransition.play();
     }
 
     private void draw_goal(Rectangle goalYou) {
